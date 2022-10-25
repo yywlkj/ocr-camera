@@ -2,7 +2,7 @@ import "./src/assets/iconfont/iconfont.css";
 import "./src/assets/iconfont/iconfont.ttf";
 import "./src/assets/iconfont/iconfont.woff";
 import "./src/assets/iconfont/iconfont.woff2";
-import  IbzOcrCamera from "@/components/IbzOcrCamera";
+import  IbzOcrCamera from "./src/components/IbzOcrCamera";
 
 let ModuleObj = {
     IbzOcrCamera

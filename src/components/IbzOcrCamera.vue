@@ -53,7 +53,7 @@
         <div class="metronome-content-show">
           <div v-if="!flag" class="metronome-content-img"  id="metronome-content-img">
             <img ref="metronome-content-img" :class="selectItem.isshowocrresult?'noneimg':'showimg'"    @load="resizeImg($event)" v-if="selectItem.img!=''" :src="onPreView(selectItem)"/>
-            <div v-else class="empty" >暂无图片</div>
+            <div v-else class="empty" >暂无选中的图片</div>
             <div  v-if="selectItem.isshowocrresult" class="metronome-content-img-desc">
               <div v-for="(item,index) in selectItem.res" :key="index"
                    :style="'position:absolute;left:' + item.box[0] / selectItem.width * 100 + '%;top:' + item.box[1] / selectItem.height * 100 + '%;border: 1px solid #ccc;width:' + (item.box[2] - item.box[0]) * (600 / selectItem.width) + 'px;height:' + ((item.box[7] - item.box[1]) * (600 / selectItem.width) + 2) + 'px;'">
