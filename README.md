@@ -1,4 +1,4 @@
-# metronome
+#ibz-ocr-camera
 
 ## Project setup
 ```
