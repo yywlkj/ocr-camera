@@ -1,4 +1,4 @@
-#ibz-ocr-camera
+# ibz-ocr-camera
 
 ## Project setup
 ```
