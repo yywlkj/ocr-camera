@@ -1,8 +1,8 @@
 <template>
 <div style="width:1000px;height: 500px;margin: auto">
   <ibzOcrCamera
-      :ocrroot="'/ocr/ocrrecord'"
       :ocrrecordid="ocrrecordid"
+      :ocrroot="'/ocr/ocrrecord'"
        />
 </div>
 </template>
