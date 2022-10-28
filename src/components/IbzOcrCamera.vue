@@ -6,7 +6,8 @@
              @click="selectData(item)">
           <div class="metronome-left-item-imgdiv"
                :class="item.img==selectItem.img?'metronome-left-item-imgdiv imgselect':'metronome-left-item-imgdiv '">
-            <img :src="index==data.length?item.img:onPreView(item)"/>
+            <img :src="onPreView(item)" v-if="index!=data.length"  @load="resizeLeftImg($event)"/>
+            <img v-else :src="item.img" />
             <p class="filename" v-if="index!=data.length">{{ item.img }}</p>
             <div class="ocr-status" v-if="index!=data.length">
               <i v-if="item.ocrState==0" class="iconfont icon-daiban ocr-status-no-icon">待识别</i>
@@ -86,22 +87,23 @@
             <img ref="metronome-content-img" :class="selectItem.isshowocrresult?'noneimg':'showimg'"
                  @load="resizeImg($event)" v-if="selectItem.img!=''" :src="onPreView(selectItem)">
             <div v-else class="empty">暂无选中的图片</div>
-            <div v-if="selectItem.isshowocrresult" class="metronome-content-img-desc">
+            <div v-if="selectItem.isshowocrresult" class="metronome-content-img-desc" >
               <div v-for="(item,index) in selectItem.res" :key="index"
-                   :style="'position:absolute;left:' + item.box[0] / selectItem.width * 100 + '%;top:' + item.box[1] / selectItem.height * 100 + '%;border: 1px solid #ccc;width:' + (item.box[2] - item.box[0]) * (600 / selectItem.width) + 'px;height:' + ((item.box[7] - item.box[1]) * (600 / selectItem.width) + 2) + 'px;'">
-                <div :style=" ((item.box[7] - item.box[1]) * (600 / selectItem.width)-1)<12?
-              ('font-family:宋体;line-height:' + ((item.box[7] - item.box[1]) * (600 / selectItem.width)-1) + 'px;font-size:0.8em;'):
-              ('font-family:宋体;line-height:' + ((item.box[7] - item.box[1]) * (600 / selectItem.width)-1) + 'px;font-size:1em;')"
+                   :style="'position:absolute;left:' + item.box[0] /$refs['metronome-content-img'].width * 100
+                    + '%;top:' + item.box[1] /$refs['metronome-content-img'].height * 100 + '%;border: 1px solid #ccc;width:' + (item.box[2] - item.box[0]) * ($refs['metronome-content-img'].width / $refs['metronome-content-img'].width)
+                    + 'px;height:' + ((item.box[7] - item.box[1]) * ($refs['metronome-content-img'].width / $refs['metronome-content-img'].width) + 2) + 'px;'">
+                <div :style=" ((item.box[7] - item.box[1]) * ($refs['metronome-content-img'].width / $refs['metronome-content-img'].width)-1)<12?
+              ('font-family:宋体;line-height:' + ((item.box[7] - item.box[1]) * ($refs['metronome-content-img'].width / $refs['metronome-content-img'].width)-1) + 'px;font-size:0.8em;'):
+              ('font-family:宋体;line-height:' + ((item.box[7] - item.box[1]) * ($refs['metronome-content-img'].width/ $refs['metronome-content-img'].width)-1) + 'px;font-size:1em;')"
                      class="ocrlinesmallfont">{{ item.text }}
                 </div>
               </div>
             </div>
-            <div v-else class="metronome-content-img-none"></div>
             <div class="wrapper" v-if="selectItem.loading"></div>
           </div>
           <div v-show="flag" class="metronome-content-photograph" ref="metronome-content-photograph">
-            <video id="video" ref="metronome-video" autoplay
-                   style="transform:rotate(90deg);object-fit: fill;"></video>
+            <video id="video" ref="metronome-video" autoplay crossOrigin='Anonymous'
+                   style="transform:rotate(90deg);"></video>
             <i class="iconfont icon-paizhao- pzicon" @click="takePhoto"></i>
           </div>
         </div>
@@ -168,22 +170,22 @@ export default {
           "label": "高度",
 
           "item": {
-            "height":1714,
-            "width":1200,
-          }
-        },
-        {
-          "label": "中度",
-          "item": {
             "height":1428,
             "width":1000,
           }
         },
         {
-          "label": "低度",
+          "label": "中度",
           "item": {
             "height":1142,
             "width":800,
+          }
+        },
+        {
+          "label": "低度",
+          "item": {
+            "height":800,
+            "width":560,
           }
         }
       ],
@@ -242,15 +244,10 @@ export default {
      */
     async selectData(item) {
       this.selectItem = item
-      this.$set(this.selectItem, "isshowocrresult", false)
+      this.$set(this.selectItem, "isshowocrresult", false)//设置识别结果默认值
+      //清空识别结果样式
       this.flag = item.flag == undefined ? false : true
       if (item.flag) {
-
-
-        // this.$refs["metronome-video"].srcObject = await navigator.mediaDevices.getUserMedia({
-        //   video: true,
-        //   audio: false
-        // });
        await navigator.mediaDevices.enumerateDevices().then(this.gotDevices).then(this.getStream).catch(this.handleError);
         var height = this.$refs["metronome-content-photograph"].clientHeight;
         var width = this.$refs["metronome-content-photograph"].clientWidth;
@@ -284,6 +281,12 @@ export default {
     },
     getStream() {
       debugger
+
+      // var height = document.getElementById("metronome-content-photograph").getBoundingClientRect().height;
+      // var width = document.getElementById("metronome-content-photograph").getBoundingClientRect().width;
+      //
+      //   width=height*(1080/1440);
+
       this.closeCamera();
       const constraints = {
         video: {width: {exact: 1440}, height: {exact: 1080}, deviceId: this.videoSelect}
@@ -291,7 +294,6 @@ export default {
       navigator.mediaDevices.getUserMedia(constraints).then(this.gotStream).catch(this.handleError);
     },
     gotStream(stream) {
-      debugger
       this.streamCopy = stream; // make stream available to console
       var videoSource =  this.$refs["metronome-video"];
       videoSource.srcObject = stream;
@@ -338,8 +340,8 @@ export default {
      */
     takePhoto() {
       var videoSource = this.$refs["metronome-video"];
-      var height = this.qxdSelect.height;
-      var width = this.qxdSelect.width;
+      var height = this.qxdSelect.width;
+      var width = this.qxdSelect.height;
       let c=document.createElement("canvas");
       let context2d =c.getContext("2d");
 
@@ -399,7 +401,6 @@ export default {
      */
     cameraLeftRotate(){
       this.rotateDeg-=90;
-      debugger
       var videoSource = this.$refs["metronome-video"];
       videoSource.style.transform = "rotate("+this.rotateDeg+"deg)";
     },
@@ -470,6 +471,7 @@ export default {
 
     showresult() {
       this.$set(this.selectItem, "isshowocrresult", !this.selectItem.isshowocrresult)
+
     },
     /**
      * 增强对比度
@@ -488,8 +490,63 @@ export default {
       xml.send(JSON.stringify(param))
     },
     resizeImg(ev) {
-      var height = document.getElementById("metronome-content-img").getBoundingClientRect().height;
-      var width = document.getElementById("metronome-content-img").getBoundingClientRect().width;
+      var img = ev.target;
+      var imgwidth = img.naturalWidth;
+      var imgheight = img.naturalHeight;
+
+
+      // if (scalebox > scaleImg) {
+      //   if (height < imgheight) {
+      //     imgheight = height;
+      //     imgwidth = height * scaleImg;
+      //   } else {
+      //     while (height > imgheight && width > imgwidth) {
+      //       let tempheight = imgheight;
+      //       let tempwidth = imgwidth;
+      //       tempheight = tempheight * 1.1;
+      //       tempwidth = tempheight * scaleImg;
+      //       if (tempheight < height && tempwidth < width) {
+      //         imgwidth = tempwidth;
+      //         imgheight = tempheight;
+      //       } else {
+      //         break;
+      //       }
+      //     }
+      //   }
+      //   img.width = imgwidth;
+      //   img.height = imgheight;
+      //   shifting = parseInt((img.height - height) / 2);
+      //   img.style.marginTop = 0 - shifting + 'px';
+      // } else {
+      //   if (width < imgwidth) {
+      //     imgwidth = width;
+      //     imgheight = width / scaleImg;
+      //   } else {
+      //     while (height > imgheight && width > imgwidth) {
+      //       let tempheight = imgheight;
+      //       let tempwidth = imgwidth;
+      //       tempheight = tempheight * 1.1;
+      //       tempwidth = tempheight * scaleImg;
+      //       if (tempheight < height && tempwidth < width) {
+      //         imgwidth = tempwidth;
+      //         imgheight = tempheight;
+      //       } else {
+      //         break;
+      //       }
+      //     }
+      //   }
+        img.height = imgheight;
+        img.width = imgwidth
+      document.getElementById("metronome-content-img").style.height =this.$refs["metronome-content-img"].naturalHeight+"px"
+      document.getElementById("metronome-content-img").style.width =this.$refs["metronome-content-img"].naturalWidth+"px"
+
+
+    },
+    resizeLeftImg(ev) {
+      var height = document.getElementsByClassName("metronome-left-item-imgdiv")[0].getBoundingClientRect().height-40;
+      var width = document.getElementsByClassName("metronome-left-item-imgdiv")[0].getBoundingClientRect().width-20;
+
+      debugger
       var img = ev.target;
       var imgwidth = img.naturalWidth;
       var imgheight = img.naturalHeight;
@@ -535,12 +592,12 @@ export default {
             }
           }
         }
-        img.height = imgheight;
+        img.height = imgheight-20;
         img.width = imgwidth;
         shifting = parseInt((img.width - width) / 2);
         img.style.marginLeft = 0 - shifting + 'px';
-        this.$forceUpdate()
       }
+
     },
 
     /**
@@ -594,6 +651,13 @@ export default {
       if (data.base64 != undefined) {
         this.data[store].base64 = data.base64
       }
+
+      if(data.height!=undefined){
+        this.data[store].height = data.height
+      }
+      if(data.width!=undefined){
+        this.data[store].width = data.width
+      }
     }
   },
 
@@ -608,6 +672,8 @@ export default {
   position: relative;
   height: 100%;
   width: 100%;
+  box-sizing: border-box;
+
 }
 
 .metronome-frame {
@@ -646,6 +712,7 @@ export default {
   position: relative;
   min-width: 150px;
   height: 120px;
+  text-align: center
 
 }
 
@@ -696,8 +763,8 @@ export default {
 }
 
 .metronome-frame .metronome-left .metronome-left-item .metronome-left-item-imgdiv img {
-  height: calc(100% - 20px);
-  width: 100%;
+
+
 }
 
 .metronome-frame .metronome-left .metronome-left-item .metronome-left-item-imgdiv img:last-child {
@@ -767,6 +834,7 @@ export default {
 .metronome-frame .metronome-content .metronome-content-show {
   height: calc(100% - 90px);
   padding: 20px;
+  overflow: scroll;
 }
 
 .metronome-frame .metronome-content .metronome-content-show .metronome-content-img {
@@ -776,6 +844,7 @@ export default {
   text-align: center;
   width: 100%;
   position: relative;
+  margin: auto;
 }
 
 .metronome-frame .metronome-content .metronome-content-show .empty {
@@ -796,7 +865,8 @@ export default {
   right: 0px;
   opacity: 1;
   bottom: 0px;
-  font-weight: bold;
+  font-size: 1px;
+  background-color: #b1adad4a;
 }
 
 .metronome-frame .metronome-content .metronome-content-img-none {
@@ -853,6 +923,7 @@ export default {
 .metronome-frame .metronome-content .metronome-content-show .metronome-content-img img {
 
   opacity: 1;
+  margin: auto;
 
 }
 
