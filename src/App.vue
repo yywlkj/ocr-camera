@@ -1,5 +1,9 @@
 <template>
-<div style="width:100%;height: 1113px;margin: auto">
+<div style="position: absolute;
+    top: 0px;
+    bottom: 0px;
+    left: 0px;
+    right: 0px;">
   <ibzOcrCamera
       :ocrrecordid="ocrrecordid"
       :ocrroot="'/ocr/ocrrecord'"
@@ -16,7 +20,7 @@ export default {
   },
   data() {
     return {
-        ocrrecordid: "3620d286-da49-059e-30eb-f85eac2efce4",
+        ocrrecordid: "3620d286-da49-059e-30eb-f85eac2efce9",
     }
   },
   methods: {

@@ -22,6 +22,7 @@
               <i v-if="item.ocrState==0" class="iconfont icon-daiban ocr-status-no-icon">待识别</i>
               <i v-else-if="item.ocrState==1" class="iconfont icon-chenggong ocr-status-success-icon">识别成功</i>
               <i v-else-if="item.ocrState==-1" class="iconfont icon-shibai ocr-status-fail-icon">识别失败</i>
+              <i v-else-if="item.ocrState==2" class="iconfont icon-shangchuanzhong ocr-status-upload-icon">上传中</i>
             </div>
             <div class="wrapper" v-if="item.loading"></div>
           </div>
@@ -125,7 +126,8 @@
             </div>
             <div class="wrapper" v-if="selectItem.loading"></div>
           </div>
-          <div v-show="flag" class="metronome-content-photograph" ref="metronome-content-photograph">
+          <div v-show="flag" class="metronome-content-photograph" ref="metronome-content-photograph"
+               v-resize="handleResize">
             <video id="video" ref="metronome-video" autoplay crossOrigin='Anonymous'
                    style="transform:rotate(90deg);"></video>
             <i class="iconfont icon-paizhao- pzicon" :class="{'disabled':streamCopy==null}" @click="takePhoto"></i>
@@ -138,40 +140,11 @@
 </template>
 
 <script>
-import 'viewerjs/dist/viewer.css';
-import Viewer from 'v-viewer';
-// Import component
+import "@/assets/js/viewer";
+import "@/assets/js/resize";
 import Loading from 'vue-loading-overlay';
-// Import stylesheet
 import 'vue-loading-overlay/dist/vue-loading.css';
 
-import Vue from 'vue';
-
-Vue.use(Viewer);
-Viewer.setDefaults({
-  Options: {
-    'inline': true, // 是否启用inline模式
-    'button': true, // 是否显示右上角关闭按钮
-    'navbar': true, // 是否显示缩略图底部导航栏
-    'title': true, // 是否显示当前图片标题，默认显示alt属性内容和尺寸
-    'toolbar': true, // 是否显示工具栏
-    'tooltip': true, // 放大或缩小图片时，是否显示缩放百分比，默认true
-    'fullscreen': true, // 播放时是否全屏，默认true
-    'loading': true, // 加载图片时是否显示loading图标，默认true
-    'loop': true, // 是否可以循环查看图片，默认true
-    'movable': true, // 是否可以拖得图片，默认true
-    'zoomable': true, // 是否可以缩放图片，默认true
-    'rotatable': true, // 是否可以旋转图片，默认true
-    'scalable': true, // 是否可以翻转图片，默认true
-    'toggleOnDblclick': true, // 放大或缩小图片时，是否可以双击还原，默认true
-    'transition': false, // 使用 CSS3 过度，默认true
-    'keyboard': true, // 是否支持键盘，默认true
-    'zoomRatio': 0.1, // 鼠标滚动时的缩放比例，默认0.1
-    'minZoomRatio': 0.01, // 最小缩放比例，默认0.01
-    'maxZoomRatio': 100, // 最大缩放比例，默认100
-    'url': 'data-source' // 设置大图片的 url
-  }
-});
 export default {
   name: "IbzOcrCamera",
   props: {
@@ -235,6 +208,7 @@ export default {
         "timetake": "",
         "title": "",
         "width": "",
+        "createdate": ""
       },
       isLoading: false,
       flag: false,
@@ -250,14 +224,14 @@ export default {
           }
         },
         {
-          "label": "标清",
+          "label": "普通",
           "item": {
             "height": 1142,
             "width": 800,
           }
         },
         {
-          "label": "普通",
+          "label": "标清",
           "item": {
             "height": 800,
             "width": 560,
@@ -284,6 +258,14 @@ export default {
     Loading
   },
   methods: {
+    handleResize({width, height}) {
+      if (width != undefined && height != undefined && this.$refs["metronome-video"] != undefined) {
+        if (height != "" && width != "")
+          height = parseInt(height.replace("px", ""))
+        width = parseInt(width.replace("px", ""))
+        this.$refs["metronome-video"].height = this.$refs["metronome-video"].width = height > width ? width : height
+      }
+    },
 
     /**
      * 预览图片
@@ -303,7 +285,6 @@ export default {
      */
     loadData() {
       this.isLoading = true;
-      debugger
       var xml = new XMLHttpRequest();
       xml.open('GET', this.ocrroot + "/" + this.ocrid, true) // 第三个值指定接口是否异步
       xml.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
@@ -398,6 +379,40 @@ export default {
       }
       return new File([u8Arr], fileName, {type: fileType});
     },
+
+    formatTime(time, fmt) {
+      if (!time) return ''
+      else {
+        const date = new Date(time)
+        const o = {
+          'M+': date.getMonth() + 1,
+          'd+': date.getDate(),
+          'H+': date.getHours(),
+          'm+': date.getMinutes(),
+          's+': date.getSeconds(),
+          'q+': Math.floor((date.getMonth() + 3) / 3),
+          S: date.getMilliseconds()
+        }
+        if (/(y+)/.test(fmt)) {
+          fmt = fmt.replace(
+              RegExp.$1,
+              (date.getFullYear() + '').substr(4 - RegExp.$1.length)
+          )
+        }
+        for (const k in o) {
+          if (new RegExp('(' + k + ')').test(fmt)) {
+            fmt = fmt.replace(
+                RegExp.$1,
+                RegExp.$1.length === 1
+                    ? o[k]
+                    : ('00' + o[k]).substr(('' + o[k]).length)
+            )
+          }
+        }
+
+        return fmt
+      }
+    },
     /**
      * 拍照图片
      */
@@ -428,33 +443,42 @@ export default {
       }
       context2d.rotate(degree * Math.PI / 180);
       context2d.drawImage(videoSource, 0, 0, width, height)
-      var url = c.toDataURL("image/png");
+      var url = c.toDataURL("image/jpeg", 9);
       let file = this.base64ToFile(url);
       // 获取时间，准备当做文件名
-      let time = new Date().getTime();
-      let renameFile = new File([file], time + ".png", {type: "image/png"})
+      let time = this.formatTime(new Date(), "yyyy-MM-dd HH-mm-ss");
+      let filename = time + "-" + this.s4() + ".jpeg";
+      let renameFile = new File([file], filename, {type: "image/jpeg"})
       var formData = new FormData();
-      this.isLoading = true;
       formData.append('file', renameFile);
-      // 接口调用
+      //接口预处理
+      var preitems = {
+        "resizeheigt": "",
+        "resizewidth": "",
+        "img": filename,
+        "ocrState": 2,
+        "base64": url.split(',')[1],
+        "loading": false,
+        "height": c.height,
+        "width": c.width,
+      };
+      var resizeLeftImg = this.resizeLeftImg(preitems);
+      this.$set(preitems, "loading", false);
+      this.$set(preitems, "resizeheigt", resizeLeftImg.height);
+      this.$set(preitems, "resizewidth", resizeLeftImg.width);
+      this.data.push(preitems)
+      this.$forceUpdate()
+      this.scrollIntoView()
       var xml = new XMLHttpRequest();
       xml.open('POST', this.ocrroot + "/" + this.ocrid + "/upload", true) // 第三个值指定接口是否异步
-
       // 接口调用成功回调
       xml.onload = (e) => {
         // 获取到接口调用成功后的返回数据
         const res = JSON.parse(e.currentTarget.response);
         for (let i = 0; i < res.length; i++) {
-          var resizeLeftImg = this.resizeLeftImg(res[i]);
-          this.$set(res[i], "loading", false);
-          this.$set(res[i], "resizeheigt", resizeLeftImg.height);
-          this.$set(res[i], "resizewidth", resizeLeftImg.width);
-          res[i].loading = false;
-          this.data.push(res[i])
+          this.datachange(res[i])
           this.singleOcr2({ocrrecordid: this.ocrid, img: res[i].img, loading: true})
-          this.isLoading = false;
         }
-        this.scrollIntoView()
       }
       // 接口调用失败处理
       xml.onerror = (e) => {
@@ -592,6 +616,7 @@ export default {
       xml.send(JSON.stringify(param))
     },
     resizeImg(ev) {
+
       var img = ev.target;
       var width;
       var height;
@@ -608,10 +633,12 @@ export default {
       document.getElementById("metronome-content-img").style.width = width + "px"
     },
     resizeLeftImg(ev) {
+      debugger
       var height = document.getElementsByClassName("metronome-left-item-imgdiv")[0].getBoundingClientRect().height - 40;
       var width = document.getElementsByClassName("metronome-left-item-imgdiv")[0].getBoundingClientRect().width - 20;
       var imgwidth = ev.width;
       var imgheight = ev.height;
+
       if (imgheight == undefined && imgwidth == undefined) {
         return;
       }
@@ -722,10 +749,10 @@ export default {
       this.data[store].res = data.res;
       if (data.base64 != undefined && this.data[store].base64 != data.base64) {
         this.data[store].base64 = data.base64
-        if (data.height != undefined && data.height != 0) {
+        if (data.height != undefined ) {
           this.data[store].height = data.height
         }
-        if (data.width != undefined && data.width != 0) {
+        if (data.width != undefined ) {
           this.data[store].width = data.width
         }
         var resizeLeftImg1 = this.resizeLeftImg(data);
@@ -741,7 +768,7 @@ export default {
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped>
+<style>
 .metronome-container {
   margin: auto;
   padding: 20px;
@@ -869,6 +896,13 @@ export default {
   top: 20px;
   right: 20px;
   color: #1afa29;
+}
+
+.metronome-frame .metronome-left .metronome-left-item .metronome-left-item-imgdiv .ocr-status-upload-icon {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  color: #40f6e7;
 }
 
 .metronome-frame .metronome-content {
