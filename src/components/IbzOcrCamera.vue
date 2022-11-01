@@ -19,12 +19,13 @@
                  :height="item.resizeheight"/>
             <p class="filename" :title="item.img" v-if="index!=data.length">{{ item.img }}</p>
             <div class="ocr-status" v-if="index!=data.length">
-              <i v-if="item.ocrState==0" class="iconfont icon-daiban ocr-status-no-icon">待识别</i>
+              <i v-if="item.ocrState==0" class="iconfont icon-daiban ocr-status-no-icon">{{item.loading?'识别中':'待识别'}}</i>
               <i v-else-if="item.ocrState==1" class="iconfont icon-chenggong ocr-status-success-icon">识别成功</i>
               <i v-else-if="item.ocrState==-1" class="iconfont icon-shibai ocr-status-fail-icon">识别失败</i>
               <i v-else-if="item.ocrState==2" class="iconfont icon-shangchuanzhong ocr-status-upload-icon">上传中</i>
             </div>
             <div class="wrapper" v-if="item.loading"></div>
+            <div class="greenwrapper" v-if="item.ocrState==2"></div>
           </div>
         </div>
         <div class="metronome-left-item"
@@ -107,10 +108,12 @@
         </div>
         <div class="metronome-content-show">
           <div v-show="!flag" class="metronome-content-img" id="metronome-content-img">
-            <viewer :images="preViewImage" v-if="selectItem.img!=''&&selectItem.img!=pz">
+            <template v-if="selectItem.img!=''&&selectItem.img!=pz" >
+            <viewer :images="preViewImage"  class="viewer" :options="viewoptions">
               <img ref="metronome-content-img" @click="preView" :class="selectItem.isshowocrresult?'noneimg':'showimg'"
                    @load="resizeImg($event)" :src="onPreView(selectItem)">
             </viewer>
+            </template>
             <div v-else class="empty">暂无选中的图片</div>
             <div v-if="selectItem.isshowocrresult" class="metronome-content-img-desc">
               <div v-for="(item,index) in selectItem.res" :key="index"
@@ -124,6 +127,7 @@
                 </div>
               </div>
             </div>
+            <div class="greenwrapper" v-if="selectItem.ocrState==2"></div>
             <div class="wrapper" v-if="selectItem.loading"></div>
           </div>
           <div v-show="flag" class="metronome-content-photograph" ref="metronome-content-photograph"
@@ -210,6 +214,30 @@ export default {
         "width": "",
         "createdate": ""
       },
+      viewoptions:{
+      Options: {
+        'inline': true, // 是否启用inline模式
+            'button': true, // 是否显示右上角关闭按钮
+            'navbar': true, // 是否显示缩略图底部导航栏
+            'title': true, // 是否显示当前图片标题，默认显示alt属性内容和尺寸
+            'toolbar': false, // 是否显示工具栏
+            'tooltip': true, // 放大或缩小图片时，是否显示缩放百分比，默认true
+            'fullscreen': true, // 播放时是否全屏，默认true
+            'loading': true, // 加载图片时是否显示loading图标，默认true
+            'loop': false, // 是否可以循环查看图片，默认true
+            'movable': true, // 是否可以拖得图片，默认true
+            'zoomable': true, // 是否可以缩放图片，默认true
+            'rotatable': true, // 是否可以旋转图片，默认true
+            'scalable': true, // 是否可以翻转图片，默认true
+            'toggleOnDblclick': true, // 放大或缩小图片时，是否可以双击还原，默认true
+            'transition': false, // 使用 CSS3 过度，默认true
+            'keyboard': true, // 是否支持键盘，默认true
+            'zoomRatio': 0.1, // 鼠标滚动时的缩放比例，默认0.1
+            'minZoomRatio': 0.01, // 最小缩放比例，默认0.01
+            'maxZoomRatio': 100, // 最大缩放比例，默认100
+            'url': 'data-source' // 设置大图片的 url
+      }
+    },
       isLoading: false,
       flag: false,
       streamCopy: null,
@@ -266,7 +294,6 @@ export default {
         this.$refs["metronome-video"].height = this.$refs["metronome-video"].width = height > width ? width : height
       }
     },
-
     /**
      * 预览图片
      */
@@ -852,8 +879,24 @@ export default {
   top: 0px;
   left: 0px;
 }
-
-
+.metronome-frame .metronome-left .metronome-left-item .metronome-left-item-imgdiv div.greenwrapper {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(#1aca3d, #6fca1a),
+  linear-gradient(90deg, #ffffff33 1px, transparent 0, transparent 19px),
+  linear-gradient(#ffffff33 1px, transparent 0, transparent 19px),
+  linear-gradient(transparent, #49d412);
+  background-size: 100% 1.5%, 10% 100%, 100% 8%, 100% 100%;
+  background-repeat: no-repeat, repeat, repeat, no-repeat;
+  background-position: 0% 0%, 0 0, 0 0, 0 0;
+  /* 初始位置 */
+  clip-path: polygon(0% 0%, 100% 0%, 100% 1.5%, 0% 1.5%);
+  /* 添加动画效果 */
+  animation: move 2s infinite linear;
+  position: absolute;
+  bottom: 0px;
+  left: 0px;
+}
 
 @keyframes move {
   to {
@@ -1009,7 +1052,24 @@ export default {
   top: 0px;
   left: 0px;
 }
-
+.metronome-frame .metronome-content .metronome-content-show .metronome-content-img div.greenwrapper {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(#1aca3d, #6fca1a),
+  linear-gradient(90deg, #ffffff33 1px, transparent 0, transparent 19px),
+  linear-gradient(#ffffff33 1px, transparent 0, transparent 19px),
+  linear-gradient(transparent, #49d412);
+  background-size: 100% 1.5%, 10% 100%, 100% 8%, 100% 100%;
+  background-repeat: no-repeat, repeat, repeat, no-repeat;
+  background-position: 0% 0%, 0 0, 0 0, 0 0;
+  /* 初始位置 */
+  clip-path: polygon(0% 0%, 100% 0%, 100% 1.5%, 0% 1.5%);
+  /* 添加动画效果 */
+  animation: move 2s infinite linear;
+  position: absolute;
+  bottom: 0px;
+  left: 0px;
+}
 .metronome-frame .metronome-content .metronome-content-show .metronome-content-photograph {
   width: 100%;
   height: 100%;
@@ -1181,6 +1241,15 @@ export default {
 
 .select select:focus {
   outline: none;
+}
+.viewer-prev {
+  display: none !important;
+}
+.viewer-play{
+  display: none !important;
+}
+.viewer-next{
+  display: none !important;
 }
 
 </style>

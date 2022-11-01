@@ -9,11 +9,11 @@ Viewer.setDefaults({
         'button': true, // 是否显示右上角关闭按钮
         'navbar': true, // 是否显示缩略图底部导航栏
         'title': true, // 是否显示当前图片标题，默认显示alt属性内容和尺寸
-        'toolbar': true, // 是否显示工具栏
+        'toolbar': false, // 是否显示工具栏
         'tooltip': true, // 放大或缩小图片时，是否显示缩放百分比，默认true
         'fullscreen': true, // 播放时是否全屏，默认true
         'loading': true, // 加载图片时是否显示loading图标，默认true
-        'loop': true, // 是否可以循环查看图片，默认true
+        'loop': false, // 是否可以循环查看图片，默认true
         'movable': true, // 是否可以拖得图片，默认true
         'zoomable': true, // 是否可以缩放图片，默认true
         'rotatable': true, // 是否可以旋转图片，默认true
