@@ -1,8 +1,8 @@
 @font-face {
     font-family: "iconfont"; /* Project id 3715502 */
-    src: url('./font_3715502_4i65k6ao5ye.woff2') format('woff2'),
-    url('./font_3715502_4i65k6ao5ye.woff') format('woff'),
-    url('./font_3715502_4i65k6ao5ye.ttf') format('truetype');
+    src: url('./font_3715502_2ljdle59amv.woff2') format('woff2'),
+    url('./font_3715502_2ljdle59amv.woff') format('woff'),
+    url('./font_3715502_2ljdle59amv.ttf') format('truetype');
 }
 
 .iconfont {
@@ -11,6 +11,10 @@
     font-style: normal;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-saomiaoshibie:before {
+    content: "\e63b";
 }
 
 .icon-shangchuanzhong:before {

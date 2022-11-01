@@ -19,7 +19,8 @@
                  :height="item.resizeheight"/>
             <p class="filename" :title="item.img" v-if="index!=data.length">{{ item.img }}</p>
             <div class="ocr-status" v-if="index!=data.length">
-              <i v-if="item.ocrState==0" class="iconfont icon-daiban ocr-status-no-icon">{{item.loading?'识别中':'待识别'}}</i>
+              <i v-if="item.ocrState==0&&!item.loading" class="iconfont icon-daiban ocr-status-no-icon">待识别</i>
+              <i v-else-if="item.ocrState==0&&item.loading" class="iconfont icon-saomiaoshibie ocr-status-ocr-icon">识别中</i>
               <i v-else-if="item.ocrState==1" class="iconfont icon-chenggong ocr-status-success-icon">识别成功</i>
               <i v-else-if="item.ocrState==-1" class="iconfont icon-shibai ocr-status-fail-icon">识别失败</i>
               <i v-else-if="item.ocrState==2" class="iconfont icon-shangchuanzhong ocr-status-upload-icon">上传中</i>
@@ -940,6 +941,12 @@ export default {
   top: 20px;
   right: 20px;
   color: #1afa29;
+}
+.metronome-frame .metronome-left .metronome-left-item .metronome-left-item-imgdiv .ocr-status-ocr-icon {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  color: #1ad1fa;
 }
 
 .metronome-frame .metronome-left .metronome-left-item .metronome-left-item-imgdiv .ocr-status-upload-icon {

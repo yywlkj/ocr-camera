@@ -1,7 +1,7 @@
 import "./src/assets/iconfont/iconfont.css";
-import "./src/assets/iconfont/font_3715502_4i65k6ao5ye.ttf";
-import "./src/assets/iconfont/font_3715502_4i65k6ao5ye.woff";
-import "./src/assets/iconfont/font_3715502_4i65k6ao5ye.woff2";
+import "./src/assets/iconfont/font_3715502_2ljdle59amv.ttf";
+import "./src/assets/iconfont/font_3715502_2ljdle59amv.woff";
+import "./src/assets/iconfont/font_3715502_2ljdle59amv.woff2";
 import  IbzOcrCamera from "./src/components/IbzOcrCamera";
 
 
