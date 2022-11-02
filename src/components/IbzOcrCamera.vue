@@ -2,13 +2,13 @@
   <div class="metronome-container">
     <loading :active.sync="isLoading"
              :can-cancel="true"
-             color="#296BEF"
+             :color="loadingIconColor"
              :lock-scroll="true"
-             loader="bars"
+             :loader="loadingIcon"
              :height=100
              :width=100
              :on-cancel="onCancel"
-             :is-full-page="fullPage"/>
+             :is-full-page="fullPageLoading"/>
     <div class="metronome-frame">
       <div class="metronome-left">
         <div v-for="(item,index) in data" :key="index" class="metronome-left-item"
@@ -165,7 +165,24 @@ export default {
         return "";//ocr识别地址
       }
     },
-
+    loadingIcon:{
+      type: String,
+      default: function () {
+        return "bars";//加载动画图标spinner or dots or bars
+      }
+    },
+    loadingIconColor:{
+      type: String,
+      default: function () {
+        return "#296BEF";//加载动画颜色
+      }
+    },
+    fullPageLoading:{
+      type: Boolean,
+      default: function () {
+        return false;//加载动画是否全屏
+      }
+    },
     ocrrecordid: {
       type: String,
     },
@@ -242,7 +259,7 @@ export default {
       isLoading: false,
       flag: false,
       streamCopy: null,
-      fullPage: true,
+      fullPage: false,
       qxdlist: [
         {
           "label": "高清",
@@ -574,7 +591,6 @@ export default {
       xml.onload = (e) => {
         // 获取到接口调用成功后的返回数据
         const res = JSON.parse(e.currentTarget.response);
-
         this.datachange(res)
       }
       xml.send(JSON.stringify(param))
@@ -708,7 +724,6 @@ export default {
             }
           }
         }
-
       }
       return {"height": imgheight, "width": imgwidth};
 
@@ -794,8 +809,7 @@ export default {
 }
 </script>
 
-<!-- Add "scoped" attribute to limit CSS to this component only -->
-<style>
+<style scoped>
 .metronome-container {
   margin: auto;
   padding: 20px;
@@ -804,7 +818,8 @@ export default {
   width: 100%;
   box-sizing: border-box;
   background-color: white;
-
+  min-width: 920px;
+  min-height: 400px;
 }
 
 .metronome-frame {

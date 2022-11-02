@@ -7,6 +7,7 @@
   <ibzOcrCamera
       :ocrrecordid="ocrrecordid"
       :ocrroot="'/ocr/ocrrecord'"
+      :loading-icon="'dots'"
        />
 </div>
 </template>
@@ -20,7 +21,7 @@ export default {
   },
   data() {
     return {
-        ocrrecordid: "3620d286-da49-059e-30eb-f85eac2efc4",
+        ocrrecordid: "3620d286-da49-059e-30eb-f85eac2efc7",
     }
   },
   methods: {
