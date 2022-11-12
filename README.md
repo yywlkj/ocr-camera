@@ -1,6 +1,12 @@
-# ibz-ocr-camera
+# ocr-camera
 
-## Project setup
+# 功能简介
+  1.拍照图片上传
+  2.图片识别以及结果预览
+  3.图片矫正，旋转
+  4.摄像头切换，清晰度切换
+  
+## 项目安装
 ```
 npm install
 ```
